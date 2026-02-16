@@ -1,88 +1,108 @@
 import React from 'react';
-import { QuoteData, CURRENCY_FORMATTER } from '../types';
+import { QuoteData, CURRENCY_FORMATTER, STATUS_CONFIG } from '../types';
 
 interface QuotePreviewProps {
   data: QuoteData;
 }
 
 export const QuotePreview: React.FC<QuotePreviewProps> = ({ data }) => {
-  // Calculations
   const subtotal = data.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
   const taxes = data.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice * (item.taxRate / 100)), 0);
   const total = subtotal + taxes;
+  const statusCfg = STATUS_CONFIG[data.status || 'draft'];
 
   return (
     <div id="quote-preview-content" className="w-full h-full text-sm text-black leading-relaxed font-sans bg-white">
-      
+
       {/* Header */}
-      <div className="flex justify-between items-start mb-12">
+      <div className="flex justify-between items-start mb-10">
         <div className="w-1/2">
-           {data.company.logoUrl ? (
-            <img 
-              src={data.company.logoUrl} 
-              alt="Logo" 
+          {data.company.logoUrl ? (
+            <img
+              src={data.company.logoUrl} alt="Logo"
               className="h-16 object-contain mb-4"
-              onError={(e) => (e.currentTarget.style.display = 'none')} 
-              crossOrigin="anonymous" 
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              crossOrigin="anonymous"
             />
-           ) : (
-            <h1 className="text-3xl font-bold text-odoo-700 mb-4">{data.company.name || 'Nome Azienda'}</h1>
-           )}
-           <div className="text-black text-xs space-y-1 font-medium">
-             <p className="font-bold">{data.company.address}</p>
-             <p>{data.company.vatId ? `P.IVA: ${data.company.vatId}` : ''}</p>
-             <p>{data.company.phone} | {data.company.email}</p>
-             {data.company.website && <p>{data.company.website}</p>}
-           </div>
+          ) : (
+            <h1 className="text-2xl font-bold mb-4" style={{ color: '#4a3043' }}>{data.company.name || 'Nome Azienda'}</h1>
+          )}
+          <div className="text-xs space-y-0.5" style={{ color: '#374151' }}>
+            {data.company.name && data.company.logoUrl && <p className="font-bold">{data.company.name}</p>}
+            <p>{data.company.address}</p>
+            {data.company.vatId && <p>P.IVA: {data.company.vatId}</p>}
+            <p>{[data.company.phone, data.company.email].filter(Boolean).join(' | ')}</p>
+            {data.company.website && <p>{data.company.website}</p>}
+          </div>
         </div>
 
         <div className="w-1/2 text-right">
-           <h2 className="text-4xl font-light text-black mb-2">Preventivo</h2>
-           <p className="text-lg font-bold text-black">{data.number}</p>
-           <div className="mt-4 text-sm text-black">
-             <p>Data: <span className="font-bold">{new Date(data.date).toLocaleDateString('it-IT')}</span></p>
-             <p>Scadenza: <span className="font-bold">{new Date(data.expiryDate).toLocaleDateString('it-IT')}</span></p>
-           </div>
-        </div>
-      </div>
+          <h2 className="text-3xl font-light mb-1" style={{ color: '#1e293b' }}>Preventivo</h2>
+          <p className="text-lg font-bold" style={{ color: '#4a3043' }}>{data.number}</p>
 
-      {/* Client Address */}
-      <div className="flex mb-16">
-        <div className="w-1/2"></div> {/* Spacer */}
-        <div className="w-1/2 pl-8">
-          <p className="text-xs text-black uppercase tracking-wider mb-1 font-bold">Destinatario</p>
-          <div className="text-base text-black">
-            <p className="font-bold text-lg">{data.client.company || data.client.name}</p>
-            {data.client.company && <p className="text-black">{data.client.name}</p>}
-            <p className="whitespace-pre-line">{data.client.address}</p>
-            {data.client.vatId && <p className="mt-1 font-medium">P.IVA: {data.client.vatId}</p>}
+          {/* Status Badge */}
+          <div className="mt-2 inline-block">
+            <span
+              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border"
+              style={{
+                backgroundColor: statusCfg.bg.replace('bg-', ''),
+                color: statusCfg.color.replace('text-', ''),
+              }}
+            >
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}>
+                {statusCfg.label}
+              </span>
+            </span>
+          </div>
+
+          <div className="mt-3 text-sm" style={{ color: '#374151' }}>
+            <p>Data: <span className="font-bold">{new Date(data.date).toLocaleDateString('it-IT')}</span></p>
+            <p>Scadenza: <span className="font-bold">{new Date(data.expiryDate).toLocaleDateString('it-IT')}</span></p>
           </div>
         </div>
       </div>
 
-      {/* Line Items Table */}
+      {/* Separator */}
+      <div className="h-0.5 w-full mb-8" style={{ background: 'linear-gradient(to right, #4a3043, #714b67, transparent)' }} />
+
+      {/* Client */}
+      <div className="flex mb-12">
+        <div className="w-1/2" />
+        <div className="w-1/2 pl-8">
+          <p className="text-xs uppercase tracking-widest mb-2 font-bold" style={{ color: '#6b7280' }}>Destinatario</p>
+          <div className="text-base" style={{ color: '#1e293b' }}>
+            <p className="font-bold text-lg">{data.client.company || data.client.name}</p>
+            {data.client.company && data.client.name && <p>{data.client.name}</p>}
+            <p className="whitespace-pre-line mt-1">{data.client.address}</p>
+            {data.client.vatId && <p className="mt-1 font-medium">P.IVA: {data.client.vatId}</p>}
+            {data.client.email && <p className="text-sm mt-0.5">{data.client.email}</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
       <div className="mb-8">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b-2 border-black text-left">
-              <th className="py-2 font-bold text-black w-1/2">Descrizione</th>
-              <th className="py-2 font-bold text-black text-right">Q.tà</th>
-              <th className="py-2 font-bold text-black text-right">Prezzo Unit.</th>
-              <th className="py-2 font-bold text-black text-right">IVA</th>
-              <th className="py-2 font-bold text-black text-right">Totale</th>
+            <tr style={{ borderBottom: '2px solid #1e293b' }}>
+              <th className="py-2.5 font-bold text-left w-1/2" style={{ color: '#1e293b' }}>Descrizione</th>
+              <th className="py-2.5 font-bold text-right" style={{ color: '#1e293b' }}>Q.tà</th>
+              <th className="py-2.5 font-bold text-right" style={{ color: '#1e293b' }}>Prezzo Unit.</th>
+              <th className="py-2.5 font-bold text-right" style={{ color: '#1e293b' }}>IVA</th>
+              <th className="py-2.5 font-bold text-right" style={{ color: '#1e293b' }}>Totale</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-300">
+          <tbody>
             {data.items.map((item) => (
-              <tr key={item.id} className="group">
+              <tr key={item.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <td className="py-4 pr-4 align-top">
-                  <p className="font-bold text-black text-base">{item.name}</p>
-                  <p className="text-black text-sm mt-1 whitespace-pre-line">{item.description}</p>
+                  <p className="font-bold text-base" style={{ color: '#1e293b' }}>{item.name}</p>
+                  {item.description && <p className="text-sm mt-1 whitespace-pre-line" style={{ color: '#475569' }}>{item.description}</p>}
                 </td>
-                <td className="py-4 text-right align-top text-black font-medium">{item.quantity}</td>
-                <td className="py-4 text-right align-top text-black font-medium">{CURRENCY_FORMATTER.format(item.unitPrice)}</td>
-                <td className="py-4 text-right align-top text-black font-medium">{item.taxRate}%</td>
-                <td className="py-4 text-right font-bold align-top text-black">
+                <td className="py-4 text-right align-top font-medium" style={{ color: '#374151' }}>{item.quantity}</td>
+                <td className="py-4 text-right align-top font-medium" style={{ color: '#374151' }}>{CURRENCY_FORMATTER.format(item.unitPrice)}</td>
+                <td className="py-4 text-right align-top font-medium" style={{ color: '#374151' }}>{item.taxRate}%</td>
+                <td className="py-4 text-right font-bold align-top" style={{ color: '#1e293b' }}>
                   {CURRENCY_FORMATTER.format(item.quantity * item.unitPrice)}
                 </td>
               </tr>
@@ -90,56 +110,57 @@ export const QuotePreview: React.FC<QuotePreviewProps> = ({ data }) => {
           </tbody>
         </table>
         {data.items.length === 0 && (
-          <div className="py-8 text-center text-black italic border-b border-gray-300">
+          <div className="py-8 text-center italic" style={{ color: '#94a3b8', borderBottom: '1px solid #e2e8f0' }}>
             Nessun articolo inserito.
           </div>
         )}
       </div>
 
-      {/* Totals Section */}
-      <div className="flex justify-end mb-12">
+      {/* Totals */}
+      <div className="flex justify-end mb-10">
         <div className="w-5/12 space-y-2 pt-4">
-          <div className="flex justify-between text-black font-medium border-b border-gray-200 pb-2">
+          <div className="flex justify-between font-medium pb-2" style={{ color: '#374151', borderBottom: '1px solid #f1f5f9' }}>
             <span>Imponibile</span>
             <span>{CURRENCY_FORMATTER.format(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-black font-medium border-b border-gray-200 pb-2">
-            <span>Totale IVA</span>
-            <span>{CURRENCY_FORMATTER.format(taxes)}</span>
-          </div>
-          <div className="flex justify-between text-xl font-bold text-black pt-2 mt-2 border-t-2 border-black">
+          {taxes > 0 && (
+            <div className="flex justify-between font-medium pb-2" style={{ color: '#374151', borderBottom: '1px solid #f1f5f9' }}>
+              <span>Totale IVA</span>
+              <span>{CURRENCY_FORMATTER.format(taxes)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-xl font-bold pt-2 mt-2" style={{ color: '#1e293b', borderTop: '2px solid #1e293b' }}>
             <span>Totale</span>
             <span>{CURRENCY_FORMATTER.format(total)}</span>
           </div>
         </div>
       </div>
 
-      {/* Footer / Notes */}
+      {/* Footer */}
       <div className="mt-auto">
-        <div className="grid grid-cols-2 gap-8 border-t-2 border-black pt-6">
+        <div className="grid grid-cols-2 gap-8 pt-6" style={{ borderTop: '2px solid #4a3043' }}>
           <div>
-            <h4 className="font-bold text-black mb-2">Termini e Condizioni</h4>
-            <p className="text-xs text-black whitespace-pre-line leading-relaxed font-medium">
+            <h4 className="font-bold mb-2" style={{ color: '#1e293b' }}>Termini e Condizioni</h4>
+            <p className="text-xs whitespace-pre-line leading-relaxed" style={{ color: '#475569' }}>
               {data.notes || "Nessuna nota specifica."}
             </p>
           </div>
-          
+
           {data.company.iban && (
-             <div>
-              <h4 className="font-bold text-black mb-2">Dettagli Pagamento</h4>
-              <p className="text-sm text-black">
-                Banca: {data.company.name}<br/>
-                IBAN: <span className="font-mono font-bold text-black bg-gray-100 p-1 rounded border border-gray-300">{data.company.iban}</span>
-              </p>
+            <div>
+              <h4 className="font-bold mb-2" style={{ color: '#1e293b' }}>Dettagli Pagamento</h4>
+              <div className="text-sm" style={{ color: '#374151' }}>
+                <p className="mb-1">Intestatario: <strong>{data.company.name}</strong></p>
+                <p>IBAN: <span className="font-mono font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>{data.company.iban}</span></p>
+              </div>
             </div>
           )}
         </div>
-        
-        <div className="mt-12 text-center text-xs text-black font-medium opacity-70">
+
+        <div className="mt-10 text-center text-xs font-medium" style={{ color: '#94a3b8' }}>
           <p>Grazie per la fiducia accordataci.</p>
         </div>
       </div>
-
     </div>
   );
 };

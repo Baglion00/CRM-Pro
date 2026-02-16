@@ -1,18 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { QuoteData, CompanyInfo, SavedClient } from '../types';
 
-// CREDENZIALI SUPABASE DEFAULT
-export const DEFAULT_URL = "https://gxibuhtjnvlxinbmqges.supabase.co";
-export const DEFAULT_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4aWJ1aHRqbnZseGluYm1xZ2VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyNzAzNTcsImV4cCI6MjA4Njg0NjM1N30.uyfpzKyrtFmQTFf8v7DVyPVa4LAHnYcKsLn2SXWmxns";
+// Read from environment variables (set in .env)
+const ENV_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const ENV_KEY = import.meta.env.VITE_SUPABASE_KEY || '';
 
-let supabase: any = null;
+let supabase: SupabaseClient | null = null;
 
-export const initSupabase = (url: string = DEFAULT_URL, key: string = DEFAULT_KEY) => {
-  if (!url || !key) return false;
+export const initSupabase = (url?: string, key?: string): boolean => {
+  const finalUrl = url || localStorage.getItem('supabase_url') || ENV_URL;
+  const finalKey = key || localStorage.getItem('supabase_key') || ENV_KEY;
+
+  if (!finalUrl || !finalKey) return false;
+
   try {
-    supabase = createClient(url, key);
-    localStorage.setItem('supabase_url', url);
-    localStorage.setItem('supabase_key', key);
+    supabase = createClient(finalUrl, finalKey);
+    localStorage.setItem('supabase_url', finalUrl);
+    localStorage.setItem('supabase_key', finalKey);
     return true;
   } catch (e) {
     console.error("Supabase init error", e);
@@ -20,33 +24,38 @@ export const initSupabase = (url: string = DEFAULT_URL, key: string = DEFAULT_KE
   }
 };
 
+// Auto-init on load
 const storedUrl = localStorage.getItem('supabase_url');
 const storedKey = localStorage.getItem('supabase_key');
 
 if (storedUrl && storedKey) {
   initSupabase(storedUrl, storedKey);
-} else {
-  initSupabase(DEFAULT_URL, DEFAULT_KEY);
+} else if (ENV_URL && ENV_KEY) {
+  initSupabase(ENV_URL, ENV_KEY);
 }
 
-export const isSupabaseConfigured = () => !!supabase;
+export const isSupabaseConfigured = (): boolean => !!supabase;
 
-export const disconnectSupabase = () => {
+export const getSupabaseUrl = (): string => {
+  return localStorage.getItem('supabase_url') || ENV_URL;
+};
+
+export const disconnectSupabase = (): void => {
   supabase = null;
   localStorage.removeItem('supabase_url');
   localStorage.removeItem('supabase_key');
 };
 
-// --- QUOTES Methods ---
+// --- QUOTES ---
 
-export const cloudSaveQuote = async (quote: QuoteData) => {
+export const cloudSaveQuote = async (quote: QuoteData): Promise<boolean> => {
   if (!supabase) throw new Error("Cloud non connesso");
   const { error } = await supabase
     .from('quotes')
-    .upsert({ 
-      id: quote.id, 
+    .upsert({
+      id: quote.id,
       data: quote,
-      updated_at: new Date()
+      updated_at: new Date().toISOString()
     }, { onConflict: 'id' });
   if (error) throw error;
   return true;
@@ -63,18 +72,18 @@ export const cloudGetQuotes = async (): Promise<QuoteData[]> => {
     console.error("Error fetching quotes", error);
     return [];
   }
-  return data.map((row: any) => row.data);
+  return (data || []).map((row: any) => row.data);
 };
 
-export const cloudDeleteQuote = async (id: string) => {
+export const cloudDeleteQuote = async (id: string): Promise<void> => {
   if (!supabase) return;
   const { error } = await supabase.from('quotes').delete().eq('id', id);
   if (error) throw error;
 };
 
-// --- SETTINGS Methods ---
+// --- SETTINGS ---
 
-export const cloudSaveCompany = async (company: CompanyInfo) => {
+export const cloudSaveCompany = async (company: CompanyInfo): Promise<void> => {
   if (!supabase) return;
   const { error } = await supabase
     .from('settings')
@@ -93,12 +102,11 @@ export const cloudGetCompany = async (): Promise<CompanyInfo | null> => {
   return data.value;
 };
 
-// --- CLIENTS Methods ---
+// --- CLIENTS ---
 
-export const cloudSaveClient = async (client: Partial<SavedClient>) => {
+export const cloudSaveClient = async (client: Partial<SavedClient>): Promise<SavedClient> => {
   if (!supabase) throw new Error("Cloud non connesso");
-  
-  // Remove ID if empty string to allow auto-generation
+
   const payload = { ...client };
   if (!payload.id) delete payload.id;
 
@@ -123,10 +131,10 @@ export const cloudGetClients = async (): Promise<SavedClient[]> => {
     console.error("Error fetching clients", error);
     return [];
   }
-  return data as SavedClient[];
+  return (data || []) as SavedClient[];
 };
 
-export const cloudDeleteClient = async (id: string) => {
+export const cloudDeleteClient = async (id: string): Promise<void> => {
   if (!supabase) return;
   const { error } = await supabase.from('clients').delete().eq('id', id);
   if (error) throw error;

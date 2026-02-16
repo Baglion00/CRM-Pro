@@ -1,5 +1,8 @@
 {
   "name": "AutoQuote Pro",
-  "description": "Un generatore di preventivi professionali stile Odoo con integrazione AI per migliorare le descrizioni dei servizi.",
+  "description": "Generatore di preventivi professionali con sincronizzazione Cloud e assistente AI. Creato da Andrea Baglioni.",
+  "author": "Andrea Baglioni",
+  "version": "1.0.0",
+  "license": "MIT",
   "requestFramePermissions": []
 }
