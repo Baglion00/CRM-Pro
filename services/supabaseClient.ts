@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { QuoteData, CompanyInfo, SavedClient } from '../types';
+import { QuoteData, CompanyInfo, SavedClient, CatalogItem } from '../types';
 
 // Read from environment variables (set in .env)
 const ENV_URL = import.meta.env.VITE_SUPABASE_URL || '';
@@ -35,6 +35,40 @@ if (storedUrl && storedKey) {
 }
 
 export const isSupabaseConfigured = (): boolean => !!supabase;
+
+// --- AUTH ---
+
+export const authSignUp = async (email: string, password: string) => {
+  if (!supabase) throw new Error("Supabase non configurato");
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+  return data;
+};
+
+export const authSignIn = async (email: string, password: string) => {
+  if (!supabase) throw new Error("Supabase non configurato");
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+};
+
+export const authSignOut = async () => {
+  if (!supabase) return;
+  await supabase.auth.signOut();
+};
+
+export const authGetUser = async () => {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getUser();
+  return data?.user || null;
+};
+
+export const authOnStateChange = (callback: (user: any) => void) => {
+  if (!supabase) return { data: { subscription: { unsubscribe: () => { } } } };
+  return supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session?.user || null);
+  });
+};
 
 export const getSupabaseUrl = (): string => {
   return localStorage.getItem('supabase_url') || ENV_URL;
@@ -137,5 +171,40 @@ export const cloudGetClients = async (): Promise<SavedClient[]> => {
 export const cloudDeleteClient = async (id: string): Promise<void> => {
   if (!supabase) return;
   const { error } = await supabase.from('clients').delete().eq('id', id);
+  if (error) throw error;
+};
+
+// --- CATALOG ---
+
+export const cloudSaveCatalogItem = async (item: Partial<CatalogItem>): Promise<CatalogItem> => {
+  if (!supabase) throw new Error("Cloud non connesso");
+  const payload = { ...item };
+  if (!payload.id) delete payload.id;
+  const { data, error } = await supabase
+    .from('catalog_items')
+    .upsert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as CatalogItem;
+};
+
+export const cloudGetCatalogItems = async (): Promise<CatalogItem[]> => {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('catalog_items')
+    .select('*')
+    .order('category', { ascending: true });
+
+  if (error) {
+    console.error("Error fetching catalog", error);
+    return [];
+  }
+  return (data || []) as CatalogItem[];
+};
+
+export const cloudDeleteCatalogItem = async (id: string): Promise<void> => {
+  if (!supabase) return;
+  const { error } = await supabase.from('catalog_items').delete().eq('id', id);
   if (error) throw error;
 };

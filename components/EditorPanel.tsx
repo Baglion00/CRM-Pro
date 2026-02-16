@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { QuoteData, LineItem, SavedClient, STATUS_CONFIG, QuoteStatus } from '../types';
-import { Plus, Trash2, Wand2, Briefcase, User, FileText, ChevronDown, ChevronUp, Globe, Loader2, Save, Check, Database, Upload, Download, Search, X, CalendarDays } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { QuoteData, LineItem, SavedClient, CatalogItem, STATUS_CONFIG, QuoteStatus } from '../types';
+import { Plus, Trash2, Wand2, Briefcase, User, FileText, ChevronDown, ChevronUp, Globe, Loader2, Save, Check, Database, Upload, Download, Search, X, CalendarDays, Package } from 'lucide-react';
 import { improveDescription, fetchCompanyData } from '../services/aiService';
 
 interface EditorPanelProps {
@@ -11,15 +11,38 @@ interface EditorPanelProps {
   onImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
   savedClients: SavedClient[];
   showToast: (msg: string, type: 'success' | 'error' | 'info' | 'warning') => void;
+  catalogItems?: CatalogItem[];
 }
 
-export const EditorPanel: React.FC<EditorPanelProps> = ({ data, onChange, onSaveProfile, onExport, onImport, savedClients, showToast }) => {
+export const EditorPanel: React.FC<EditorPanelProps> = ({ data, onChange, onSaveProfile, onExport, onImport, savedClients, showToast, catalogItems = [] }) => {
   const [activeSection, setActiveSection] = useState<string>('company');
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isFetchingSite, setIsFetchingSite] = useState(false);
   const [savedProfileSuccess, setSavedProfileSuccess] = useState(false);
   const [showClientSearch, setShowClientSearch] = useState(false);
   const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [showCatalogPicker, setShowCatalogPicker] = useState(false);
+  const [catalogSearch, setCatalogSearch] = useState('');
+
+  const filteredCatalog = useMemo(() => {
+    if (!catalogSearch) return catalogItems;
+    return catalogItems.filter(i => i.name.toLowerCase().includes(catalogSearch.toLowerCase()) || i.category.toLowerCase().includes(catalogSearch.toLowerCase()));
+  }, [catalogItems, catalogSearch]);
+
+  const addFromCatalog = (item: CatalogItem) => {
+    const newItem: LineItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: item.name,
+      description: item.description,
+      quantity: 1,
+      unitPrice: item.unitPrice,
+      taxRate: item.taxRate,
+    };
+    onChange({ items: [...data.items, newItem] });
+    setShowCatalogPicker(false);
+    setCatalogSearch('');
+    showToast(`"${item.name}" aggiunto al preventivo`, 'success');
+  };
 
   const toggleSection = (section: string) => {
     setActiveSection(activeSection === section ? '' : section);
@@ -323,10 +346,54 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({ data, onChange, onSave
           ))}
         </div>
 
-        <button onClick={addItem}
-          className="mt-4 w-full py-2.5 border-2 border-dashed border-brand-200 text-brand-600 rounded-xl hover:bg-brand-50 hover:border-brand-300 transition-colors flex items-center justify-center gap-2 font-semibold text-sm">
-          <Plus size={18} /> Aggiungi Riga
-        </button>
+        <div className="mt-4 flex gap-2">
+          <button onClick={addItem}
+            className="flex-1 py-2.5 border-2 border-dashed border-brand-200 text-brand-600 rounded-xl hover:bg-brand-50 hover:border-brand-300 transition-colors flex items-center justify-center gap-2 font-semibold text-sm">
+            <Plus size={18} /> Aggiungi Riga
+          </button>
+          {catalogItems.length > 0 && (
+            <button onClick={() => setShowCatalogPicker(true)}
+              className="px-4 py-2.5 border-2 border-dashed border-violet-200 text-violet-600 rounded-xl hover:bg-violet-50 hover:border-violet-300 transition-colors flex items-center justify-center gap-2 font-semibold text-sm">
+              <Package size={16} /> Da Catalogo
+            </button>
+          )}
+        </div>
+
+        {/* Catalog Picker Modal */}
+        {showCatalogPicker && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-scale-in">
+              <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="font-bold text-slate-800">Scegli dal Catalogo</h3>
+                <button onClick={() => { setShowCatalogPicker(false); setCatalogSearch(''); }} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-4">
+                <div className="relative mb-3">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input type="text" placeholder="Cerca..." value={catalogSearch} onChange={e => setCatalogSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 outline-none text-sm" />
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {filteredCatalog.map(item => (
+                    <button key={item.id} onClick={() => addFromCatalog(item)}
+                      className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-brand-300 hover:bg-brand-50/50 transition-all flex justify-between items-center group">
+                      <div>
+                        <p className="font-semibold text-slate-700 text-sm">{item.name}</p>
+                        <p className="text-xs text-slate-400">{item.category}</p>
+                      </div>
+                      <span className="text-sm font-bold text-slate-800">€{item.unitPrice.toFixed(2)}</span>
+                    </button>
+                  ))}
+                  {filteredCatalog.length === 0 && (
+                    <p className="text-center text-sm text-slate-400 py-4">Nessun prodotto trovato.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Notes */}

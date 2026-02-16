@@ -1,0 +1,32 @@
+{
+    "name": "AutoQuote Pro",
+    "short_name": "AutoQuote",
+    "description": "Generatore di preventivi professionali con sincronizzazione Cloud e gestione clienti.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1a1018",
+    "theme_color": "#714b67",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "finance",
+        "productivity"
+    ],
+    "lang": "it",
+    "screenshots": [],
+    "prefer_related_applications": false
+}

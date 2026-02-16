@@ -36,28 +36,71 @@
 
 /* Animations */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-down {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(113, 75, 103, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 12px 4px rgba(113, 75, 103, 0.15);
+  }
 }
 
 /* Base */
@@ -70,6 +113,82 @@ body {
   background-color: var(--color-surface);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ========== DARK MODE ========== */
+.dark body,
+body.dark {
+  background-color: #0f0d13;
+  color: #e2e8f0;
+}
+
+.dark .bg-white {
+  background-color: #1a1724 !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-surface {
+  background-color: #13111a !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: #1e1b29 !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-100 {
+  border-color: #2d2a3a !important;
+}
+
+.dark .text-slate-800,
+.dark .text-slate-900 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+.dark .text-slate-400 {
+  color: #475569 !important;
+}
+
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 4px 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1a1724;
+  border-color: #2d2a3a;
+  color: #e2e8f0;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #714b67;
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: #1e1b29 !important;
+}
+
+.dark .hover\:bg-slate-100:hover {
+  background-color: #252233 !important;
 }
 
 /* Glassmorphism utility */
@@ -78,6 +197,11 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass {
+  background: rgba(26, 23, 36, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .glass-dark {
@@ -107,13 +231,43 @@ body {
 
 /* Print */
 @media print {
-  @page { margin: 0; size: auto; }
-  body { background-color: white; -webkit-print-color-adjust: exact; }
-  .no-print { display: none !important; }
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background-color: white;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
 }
 
 /* Status badge colors */
-.status-draft { background: #f1f5f9; color: #475569; }
-.status-sent { background: #eff6ff; color: #2563eb; }
-.status-accepted { background: #f0fdf4; color: #16a34a; }
-.status-rejected { background: #fef2f2; color: #dc2626; }
+.status-draft {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.status-sent {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.status-accepted {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.status-rejected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* PWA install prompt */
+.pwa-install-banner {
+  animation: slide-up 0.4s ease-out;
+}

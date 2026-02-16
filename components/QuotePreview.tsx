@@ -8,7 +8,8 @@ interface QuotePreviewProps {
 export const QuotePreview: React.FC<QuotePreviewProps> = ({ data }) => {
   const subtotal = data.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
   const taxes = data.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice * (item.taxRate / 100)), 0);
-  const total = subtotal + taxes;
+  const ritenuta = data.ritenutaRate ? subtotal * (data.ritenutaRate / 100) : 0;
+  const total = subtotal + taxes - ritenuta;
   const statusCfg = STATUS_CONFIG[data.status || 'draft'];
 
   return (
@@ -129,10 +130,22 @@ export const QuotePreview: React.FC<QuotePreviewProps> = ({ data }) => {
               <span>{CURRENCY_FORMATTER.format(taxes)}</span>
             </div>
           )}
+          {ritenuta > 0 && (
+            <div className="flex justify-between font-medium pb-2" style={{ color: '#dc2626', borderBottom: '1px solid #f1f5f9' }}>
+              <span>Ritenuta d'acconto ({data.ritenutaRate}%)</span>
+              <span>- {CURRENCY_FORMATTER.format(ritenuta)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-xl font-bold pt-2 mt-2" style={{ color: '#1e293b', borderTop: '2px solid #1e293b' }}>
             <span>Totale</span>
             <span>{CURRENCY_FORMATTER.format(total)}</span>
           </div>
+          {ritenuta > 0 && (
+            <div className="flex justify-between text-xs font-medium pt-1" style={{ color: '#6b7280' }}>
+              <span>Netto a pagare</span>
+              <span>{CURRENCY_FORMATTER.format(total)}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -156,6 +169,38 @@ export const QuotePreview: React.FC<QuotePreviewProps> = ({ data }) => {
             </div>
           )}
         </div>
+
+        {/* Digital Signature */}
+        {data.signatureData && (
+          <div className="mt-8 pt-6" style={{ borderTop: '1px solid #e2e8f0' }}>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-xs font-medium mb-1" style={{ color: '#6b7280' }}>Firma digitale</p>
+                <img src={data.signatureData} alt="Firma" className="h-16 object-contain" />
+                <p className="text-xs font-bold mt-1" style={{ color: '#1e293b' }}>{data.signedBy}</p>
+                {data.signedAt && (
+                  <p className="text-[10px]" style={{ color: '#94a3b8' }}>
+                    Firmato il {new Date(data.signedAt).toLocaleDateString('it-IT')} alle {new Date(data.signedAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-xs" style={{ color: '#6b7280' }}>Per accettazione</p>
+                <div className="w-40 h-px mt-8" style={{ backgroundColor: '#1e293b' }} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Acceptance line if no signature */}
+        {!data.signatureData && (
+          <div className="mt-8 pt-6 flex justify-end" style={{ borderTop: '1px solid #e2e8f0' }}>
+            <div className="text-right">
+              <p className="text-xs mb-1" style={{ color: '#6b7280' }}>Per accettazione (timbro e firma)</p>
+              <div className="w-48 h-px mt-12" style={{ backgroundColor: '#1e293b' }} />
+            </div>
+          </div>
+        )}
 
         <div className="mt-10 text-center text-xs font-medium" style={{ color: '#94a3b8' }}>
           <p>Grazie per la fiducia accordataci.</p>
