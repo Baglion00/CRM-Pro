@@ -21,6 +21,7 @@ import { VPSSettings } from './components/VPSSettings';
 import { PipelineView } from './components/PipelineView';
 import { CalendarView } from './components/CalendarView';
 import { AutomationsPanel } from './components/AutomationsPanel';
+import { Sidebar } from './components/Sidebar';
 import { Toast, ToastType } from './components/ui/Toast';
 import { NotificationBell } from './components/ui/NotificationBell';
 import {
@@ -767,36 +768,7 @@ const App: React.FC = () => {
   }
 
   // --- Nav items ---
-  const MENU_GROUPS = [
-    {
-      title: 'VENDITE',
-      items: [
-        { key: 'dashboard' as View, icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-        { key: 'pipeline' as View, icon: <Kanban size={20} />, label: 'Pipeline' },
-        { key: 'editor' as View, icon: <FileText size={20} />, label: 'Nuovo Preventivo' },
-        { key: 'history' as View, icon: <LayoutList size={20} />, label: 'Storico' },
-      ]
-    },
-    {
-      title: 'OPERAZIONI',
-      items: [
-        { key: 'clients' as View, icon: <Users size={20} />, label: 'Clienti' },
-        { key: 'catalog' as View, icon: <Package size={20} />, label: 'Catalogo' },
-        { key: 'calendar' as View, icon: <Calendar size={20} />, label: 'Calendario' },
-      ]
-    },
-    {
-      title: 'AMMINISTRAZIONE',
-      items: [
-        { key: 'automations' as View, icon: <Zap size={20} />, label: 'Automazioni' },
-        { key: 'team' as View, icon: <UsersRound size={20} />, label: 'Team' },
-        ...(installMode === 'vps' ? [{ key: 'integrations' as View, icon: <Globe size={20} />, label: 'Integrazioni' }] : []),
-        { key: 'domains' as View, icon: <Server size={20} />, label: 'Domini & VPS' },
-        { key: 'analytics' as View, icon: <BarChart3 size={20} />, label: 'Analytics' },
-        { key: 'settings' as View, icon: <Settings size={20} />, label: 'Impostazioni' },
-      ]
-    }
-  ];
+
 
   // --- EDITOR VIEW ---
   if (view === 'editor') {
@@ -963,93 +935,16 @@ const App: React.FC = () => {
       />
 
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex w-[220px] bg-white border-r border-slate-200/80 h-screen flex-col sticky top-0 shadow-sm">
-        {/* Logo */}
-        <div className="p-5 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-              <PenTool size={18} />
-            </div>
-            <div>
-              <span className="font-bold text-slate-800 text-sm">AutoQuote</span>
-              <span className="block text-[10px] text-slate-400 font-medium -mt-0.5">PRO</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav Items */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 custom-scrollbar">
-          {MENU_GROUPS.map((group, groupIndex) => (
-            <div key={groupIndex}>
-              <h3 className="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                {group.title}
-              </h3>
-              <div className="space-y-1">
-                {group.items.map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => {
-                      setView(item.key);
-                      if (window.innerWidth < 1024) setMobileMenuOpen(false); // Use setMobileMenuOpen for consistency
-                    }}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all group ${view === item.key
-                      ? 'bg-brand-600 text-white shadow-lg shadow-brand-500/30'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                      }`}
-                  >
-                    <div className="flex items-center gap-3 font-medium">
-                      {item.icon}
-                      <span>{item.label}</span>
-                    </div>
-                    {item.key === 'history' && reminders.length > 0 && view !== item.key && ( // Only show badge if not active
-                      <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                        {reminders.length > 9 ? '9+' : reminders.length}
-                      </span>
-                    )}
-                    {view === item.key && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-slate-100 space-y-1">
-          {/* Dark mode toggle */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
-          >
-            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-            {isDarkMode ? 'Modalità chiara' : 'Modalità scura'}
-          </button>
-          <button
-            onClick={() => createNewQuote()}
-            className="w-full py-2.5 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-brand-500/25 transition-all active:scale-[0.97] flex items-center justify-center gap-2"
-          >
-            <FileText size={16} /> Nuovo Preventivo
-          </button>
-          <button
-            onClick={() => setIsCloudModalOpen(true)}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isCloudConnected
-              ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100'
-              : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
-              }`}
-          >
-            {isCloudConnected ? <Wifi size={16} /> : <WifiOff size={16} />}
-            {isCloudConnected ? 'Cloud Connesso' : 'Connetti Cloud'}
-          </button>
-          {authUser && (
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-            >
-              <LogOut size={16} /> Esci
-            </button>
-          )}
-        </div>
-      </aside>
+      {/* Sidebar Component */}
+      <Sidebar
+        view={view}
+        setView={setView}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        installMode={installMode}
+        onLogout={handleLogout}
+        userRole={teamMembers.find(m => m.email === authUser?.email)?.role}
+      />
 
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
@@ -1071,40 +966,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {mobileMenuOpen && (
-          <div className="bg-white border-t border-slate-100 p-3 space-y-1 animate-slide-down">
-            {MENU_GROUPS.map((group, groupIndex) => (
-              <div key={groupIndex}>
-                <h3 className="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 mt-3">
-                  {group.title}
-                </h3>
-                <div className="space-y-1">
-                  {group.items.map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => { setView(item.key); setMobileMenuOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${view === item.key ? 'bg-brand-50 text-brand-700' : 'text-slate-500 hover:bg-slate-50'
-                        }`}
-                    >
-                      {item.icon} {item.label}
-                      {item.key === 'history' && reminders.length > 0 && (
-                        <span className="ml-auto w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                          {reminders.length > 9 ? '9+' : reminders.length}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={() => { createNewQuote(); setMobileMenuOpen(false); }}
-              className="w-full py-2.5 bg-gradient-to-r from-brand-500 to-brand-700 text-white rounded-xl text-sm font-semibold mt-2"
-            >
-              + Nuovo Preventivo
-            </button>
-          </div>
-        )}
+
       </div>
 
       {/* Main Content */}

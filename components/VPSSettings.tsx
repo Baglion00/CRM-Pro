@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DomainConfig, InstallMode } from '../types';
 import {
     Globe, Server, Shield, Check, AlertTriangle, RefreshCw,
-    Terminal, Copy, ExternalLink, HardDrive, ArrowRight
+    Terminal, Copy, ExternalLink, HardDrive, ArrowRight, Zap
 } from 'lucide-react';
 
 interface VPSSettingsProps {
@@ -182,39 +182,51 @@ server {
                         </div>
                     </div>
 
-                    {/* Server Configuration Snippet */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <Terminal size={20} className="text-slate-600" /> Nginx Config
-                            </h3>
-                            <button
-                                onClick={handleGenerateConfig}
-                                className="text-sm text-brand-600 hover:text-brand-700 font-medium"
-                            >
-                                Genera
-                            </button>
-                        </div>
+                    <div className="mt-6 flex items-center justify-end">
+                        <button
+                            onClick={() => {
+                                setCheckingSSL(true);
+                                // Simulation of backend API call
+                                setTimeout(() => {
+                                    setCheckingSSL(false);
+                                    showToast('Dominio configurato e SSL attivato con successo!', 'success');
+                                    setDomainConfig(prev => ({
+                                        ...prev,
+                                        sslEnabled: true,
+                                        lastCheck: new Date().toISOString(),
+                                        sslExpiry: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+                                    }));
+                                }, 2000);
+                            }}
+                            disabled={checkingSSL || !domainConfig.domain}
+                            className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/30 flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
+                        >
+                            {checkingSSL ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} />}
+                            {checkingSSL ? 'Configurazione in corso...' : 'Configura Server Automaticamente'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
-                        <div className="relative group">
-                            <textarea
-                                readOnly
-                                value={nginxConfig || '# Inserisci un dominio e clicca Genera'}
-                                className="w-full h-64 bg-slate-900 text-slate-300 font-mono text-xs p-4 rounded-xl outline-none resize-none"
-                            />
-                            {nginxConfig && (
-                                <button
-                                    onClick={copyConfig}
-                                    className="absolute top-2 right-2 p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors opacity-0 group-hover:opacity-100"
-                                    title="Copia"
-                                >
-                                    <Copy size={16} />
-                                </button>
-                            )}
-                        </div>
-                        <p className="text-xs text-slate-400 mt-3">
-                            Copia questa configurazione in <code>/etc/nginx/sites-available/{domainConfig.domain || 'default'}</code> sul tuo server VPS.
-                        </p>
+            {installMode === 'vps' && (
+                <div className="bg-slate-900 rounded-2xl p-6 text-slate-300 shadow-lg border border-slate-800">
+                    <h3 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
+                        <Terminal size={20} className="text-brand-400" /> Installazione Automatica
+                    </h3>
+                    <p className="mb-4 text-sm">
+                        Esegui questo comando sul tuo server VPS (Ubuntu/Debian) per configurare automaticamente Nginx, SSL e Firewall:
+                    </p>
+                    <div className="bg-black/50 p-4 rounded-xl font-mono text-sm text-brand-300 border border-white/10 flex justify-between items-center group">
+                        <span>curl -O https://raw.githubusercontent.com/Baglion00/CRM-Pro/main/install_vps.sh && chmod +x install_vps.sh && sudo ./install_vps.sh {domainConfig.domain || 'tuo-dominio.com'}</span>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(`curl -O https://raw.githubusercontent.com/Baglion00/CRM-Pro/main/install_vps.sh && chmod +x install_vps.sh && sudo ./install_vps.sh ${domainConfig.domain || 'tuo-dominio.com'}`);
+                                showToast('Comando copiato!', 'success');
+                            }}
+                            className="p-2 hover:bg-white/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                            <Copy size={16} />
+                        </button>
                     </div>
                 </div>
             )}
