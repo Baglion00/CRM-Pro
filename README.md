@@ -182,9 +182,13 @@ AutoQuote-Pro/
 
 <div align="center">
 
-| Dashboard | Editor |
+| Dashboard | Clienti |
 |---|---|
-| KPI cards, attività recente, navigazione sidebar | Editor a pannello diviso con anteprima PDF live |
+| ![Dashboard](assets/screenshots/dashboard.png) | ![Clienti](assets/screenshots/clients.png) |
+
+| Storico Preventivi |
+|---|
+| ![Storico](assets/screenshots/history.png) |
 
 </div>
 
