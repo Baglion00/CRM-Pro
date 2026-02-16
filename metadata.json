@@ -1,0 +1,5 @@
+{
+  "name": "AutoQuote Pro",
+  "description": "Un generatore di preventivi professionali stile Odoo con integrazione AI per migliorare le descrizioni dei servizi.",
+  "requestFramePermissions": []
+}
