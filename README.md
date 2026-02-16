@@ -12,6 +12,28 @@
   </p>
 </div>
 
+<div align="center">
+  <br />
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FBaglion00%2FCRM-Pro">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel"/>
+  </a>
+  &nbsp;
+  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/Baglion00/CRM-Pro">
+    <img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"/>
+  </a>
+</div>
+
+---
+
+## ✨ Perché questo CRM?
+
+Spesso i CRM "famosi" sono troppo complessi, costosi o non adattati alla burocrazia italiana. **AutoQuote Pro** nasce per colmare questo vuoto:
+
+- ✅ **Niente abbonamenti mensili**: Il codice è tuo.
+- ✅ **Privacy Totale**: I dati stanno nel tuo browser o nel tuo Supabase privato.
+- ✅ **Stile Premium**: Per fare bella figura coi clienti anche dal preventivo.
+- ✅ **Italiano Nativo**: Predisposto per P.IVA, C.F., Bollo e Ritenuta.
+
 ---
 
 ## ✨ Panoramica

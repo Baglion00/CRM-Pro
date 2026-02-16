@@ -105,6 +105,62 @@ export const Dashboard: React.FC<DashboardProps> = ({ quotes, clientCount, onNav
         ))}
       </div>
 
+      {/* Revenue Chart */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
+        <h3 className="font-bold text-slate-800 mb-6">Andamento Fatturato (Ultimi 6 mesi)</h3>
+        <div className="flex items-end justify-between h-48 gap-2 sm:gap-4">
+          {Array.from({ length: 6 }).map((_, i) => {
+            const date = new Date();
+            date.setMonth(date.getMonth() - (5 - i));
+            const monthKey = date.toLocaleString('default', { month: 'short' });
+
+            // Calculate revenue for this month
+            const monthRevenue = quotes
+              .filter(q => {
+                const qDate = new Date(q.date);
+                return qDate.getMonth() === date.getMonth() &&
+                  qDate.getFullYear() === date.getFullYear() &&
+                  q.status !== 'rejected';
+              })
+              .reduce((sum, q) => sum + q.items.reduce((s, item) => s + (item.quantity * item.unitPrice), 0), 0);
+
+            // Calculate max revenue for scaling (min 1000 to avoid division by zero visually)
+            const maxRev = Math.max(
+              ...Array.from({ length: 6 }).map((_, j) => {
+                const d = new Date();
+                d.setMonth(d.getMonth() - (5 - j));
+                return quotes
+                  .filter(q => {
+                    const qD = new Date(q.date);
+                    return qD.getMonth() === d.getMonth() && qD.getFullYear() === d.getFullYear();
+                  })
+                  .reduce((sum, q) => sum + q.items.reduce((s, item) => s + (item.quantity * item.unitPrice), 0), 0);
+              }),
+              1000
+            );
+
+            const heightPerc = Math.round((monthRevenue / maxRev) * 100);
+
+            return (
+              <div key={i} className="flex flex-col items-center flex-1 group relative">
+                <div className="w-full bg-slate-50 rounded-t-lg relative flex items-end overflow-hidden h-full group-hover:bg-slate-100 transition-colors">
+                  <div
+                    style={{ height: `${heightPerc}%` }}
+                    className={`w-full bg-gradient-to-t ${i === 5 ? 'from-brand-500 to-brand-400' : 'from-brand-200 to-brand-100'} rounded-t-md transition-all duration-1000 ease-out group-hover:from-brand-600 group-hover:to-brand-500 relative min-h-[4px]`}
+                  >
+                  </div>
+                </div>
+                {/* Tooltip */}
+                <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs py-1 px-2 rounded-md pointer-events-none whitespace-nowrap z-10">
+                  {CURRENCY_FORMATTER.format(monthRevenue)}
+                </div>
+                <span className="text-xs text-slate-400 mt-2 font-medium capitalize">{monthKey}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Recent Activity */}
       <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
         <div className="p-5 border-b border-slate-100 flex justify-between items-center">
