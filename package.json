@@ -1,5 +1,6 @@
 {
   "name": "autoquote-pro",
+  "private": true,
   "version": "1.0.0",
   "description": "Generatore di preventivi professionali con sincronizzazione Cloud e assistente AI.",
   "author": "Andrea Baglioni",
